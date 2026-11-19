@@ -125,4 +125,4 @@ Verified on 2026-11-18 against the official docs (OpenCode 1.19.5 and Claude Cod
 | D19 — source in the product folder | not part of the generated system |
 | D20 — languages | Generated layout (last paragraph) |
 | D21, D25 — Codex | Generated layout; Load protocol; The two agents; Harness facts |
-| D24 — install by link, no tests installed | `README.md` of the package |
+| D24 — install by link, no tests installed | `README.md` and `install.py` of the repository (not installed) |
