@@ -30,20 +30,27 @@ def main(argv: list[str] | None = None) -> int:
     if dest.resolve() == HERE:
         print(f"error: {dest} is this downloaded copy; download the repository to a temporary folder first")
         return 3
-    if dest.exists() and not a.replace:
+    if (dest.exists() or dest.is_symlink()) and not a.replace:
         print(f"already installed: {dest} exists; ask the user, then run again with --replace")
         return 2
+    staging = dest.with_name(dest.name + ".new")
     try:
-        if dest.exists():
-            shutil.rmtree(dest)
-        dest.mkdir(parents=True)
-        for part in PARTS:
+        if staging.exists():
+            shutil.rmtree(staging)
+        staging.mkdir(parents=True)
+        for part in PARTS:  # copy aside first, so a failed copy never destroys an existing installation
             src = HERE / part
             if src.is_dir():
-                shutil.copytree(src, dest / part, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store"))
+                shutil.copytree(src, staging / part, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store"))
             else:
-                shutil.copy2(src, dest / part)
-    except PermissionError as e:
+                shutil.copy2(src, staging / part)
+        if dest.is_symlink() or dest.is_file():
+            dest.unlink()
+        elif dest.exists():
+            shutil.rmtree(dest)
+        staging.rename(dest)
+    except OSError as e:
+        shutil.rmtree(staging, ignore_errors=True)
         print(f"error: cannot write {dest} ({e}); tell the user to copy {', '.join(PARTS)} from {HERE} into {dest}")
         return 3
     print(f"installed: {dest} ({', '.join(sorted(c.name for c in dest.iterdir()))})")

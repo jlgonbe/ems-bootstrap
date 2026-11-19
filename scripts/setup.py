@@ -6,6 +6,9 @@ memory.py → link the skill for Claude Code → memory.py check. Nothing is wri
 validation fails; if D001 or the check fails, everything this run created is removed.
 
 Usage (from anywhere):
+Exit: 0 done · 1 not a new project · 2 invalid answer · 3 D001 failed · 4 check failed · 5 done, files staged
+for the agent to create · 6 unexpected error while writing. Exits 3, 4 and 6 remove everything the run created.
+
   python3 setup.py --root DIR --project-name "…" --project "…" --how "…" --language Spanish \\
       --harness opencode,claude,codex [--planner-model-opencode P/M] [--executor-model-opencode P/M] \\
       [--planner-model-claude opus] [--executor-model-claude sonnet] \\
@@ -142,7 +145,7 @@ def d001(a: argparse.Namespace, harness: list[str]) -> list[str]:
                           "because nobody knows when or why each line was written",
         "--decision", "AGENTS.md (imported by CLAUDE.md) holds the current state, with five working rules (only the "
                       "script writes the logs; ask instead of assuming; say so when an idea has a problem instead of "
-                      "agreeing by default; plan before a complex change; a rule changes only after its decision) and is rewritten when it changes; "
+                      "agreeing by default; plan before a complex change; a rule changes only together with its decision) and is rewritten when it changes; "
                       "MEMORY.md (lessons, loaded every session) and DECISIONS.md (decisions, read on demand) are dated "
                       "append-only history written only by the project-memory skill; lessons and decisions are recorded "
                       "the moment they happen and every task is closed by checking AGENTS.md; complex changes are planned "
@@ -223,30 +226,36 @@ def main(argv: list[str] | None = None) -> int:
     created: list[str] = []
     pending: list[str] = []
     before = set(root.rglob("*"))
-    values = {"project_name": a.project_name.strip(), "project": a.project.strip(), "how": a.how.strip(),
-              "language": a.language.strip(), "agents_rows": agents_rows(harness),
-              "triggers": a.triggers.strip() or DEFAULT_TRIGGER}
-    for name in ("AGENTS.md", "CLAUDE.md", "MEMORY.md", "DECISIONS.md"):
-        write(root, name, fill((ASSETS / f"{name}.tmpl").read_text(encoding="utf-8"), values), created, pending)
-    skill = ".agents/skills/project-memory"
-    src = ASSETS / "skill/project-memory"
-    skill_files = {"SKILL.md": fill((src / "SKILL.md.tmpl").read_text(encoding="utf-8"), values),
-                   "references/entry-format.md": (src / "references/entry-format.md").read_text(encoding="utf-8"),
-                   "scripts/memory.py": (src / "scripts/memory.py").read_text(encoding="utf-8")}
-    for name, text in skill_files.items():
-        write(root, f"{skill}/{name}", text, created, pending)
-    if "opencode" in harness:
-        write(root, "opencode.json", (ASSETS / "opencode.json.tmpl").read_text(encoding="utf-8"), created, pending)
-    for h in HARNESSES:
-        if h not in harness:
-            continue
-        folder, ext = AGENT_FILES[h]
-        for agent, role in (("project-planner", "planner"), ("project-plan-executor", "executor")):
-            tmpl = (ASSETS / "agents" / h / f"{agent}.{ext}.tmpl").read_text(encoding="utf-8")
-            write(root, f"{folder}/{agent}.{ext}",
-                  fill(tmpl, {"model_line": model_line(getattr(a, f"{role}_model_{h}"), h)}), created, pending)
-    if "claude" in harness:
-        link_skill_for_claude(root, skill_files, created, pending)
+    try:
+        values = {"project_name": a.project_name.strip(), "project": a.project.strip(), "how": a.how.strip(),
+                  "language": a.language.strip(), "agents_rows": agents_rows(harness),
+                  "triggers": a.triggers.strip() or DEFAULT_TRIGGER}
+        for name in ("AGENTS.md", "CLAUDE.md", "MEMORY.md", "DECISIONS.md"):
+            write(root, name, fill((ASSETS / f"{name}.tmpl").read_text(encoding="utf-8"), values), created, pending)
+        skill = ".agents/skills/project-memory"
+        src = ASSETS / "skill/project-memory"
+        skill_files = {"SKILL.md": fill((src / "SKILL.md.tmpl").read_text(encoding="utf-8"), values),
+                       "references/entry-format.md": (src / "references/entry-format.md").read_text(encoding="utf-8"),
+                       "scripts/memory.py": (src / "scripts/memory.py").read_text(encoding="utf-8")}
+        for name, text in skill_files.items():
+            write(root, f"{skill}/{name}", text, created, pending)
+        if "opencode" in harness:
+            write(root, "opencode.json", (ASSETS / "opencode.json.tmpl").read_text(encoding="utf-8"), created, pending)
+        for h in HARNESSES:
+            if h not in harness:
+                continue
+            folder, ext = AGENT_FILES[h]
+            for agent, role in (("project-planner", "planner"), ("project-plan-executor", "executor")):
+                tmpl = (ASSETS / "agents" / h / f"{agent}.{ext}.tmpl").read_text(encoding="utf-8")
+                write(root, f"{folder}/{agent}.{ext}",
+                      fill(tmpl, {"model_line": model_line(getattr(a, f"{role}_model_{h}"), h)}), created, pending)
+        if "claude" in harness:
+            link_skill_for_claude(root, skill_files, created, pending)
+    except Exception as e:  # any failure while writing: leave the folder as it was, so a retry passes the gate
+        rollback(root, before)
+        print(f"error: {type(e).__name__}: {e}")
+        print("everything this run created was removed, so the folder is as before")
+        return 6
 
     # The package's own copy of memory.py: the project's copy may be staged if the sandbox blocked .agents/.
     mem = [sys.executable, str(src / "scripts" / "memory.py"), "--root", str(root)]

@@ -4,7 +4,10 @@ python3 -B -m unittest discover -s tests -v
 import io
 import re
 import shutil
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11
+    tomllib = None
 import subprocess
 import sys
 import tempfile
@@ -142,6 +145,7 @@ class TestSetup(unittest.TestCase):
         self.assertIn("model: opus", (self.root / ".ems-pending/claude/agents/project-planner.md").read_text())
         self.assertEqual(self.check(), (0, "OK"))
 
+    @unittest.skipIf(tomllib is None, "tomllib needs Python 3.11+")
     def test_codex_agents_are_valid_toml(self):
         code, out = self.run_setup("--harness", "codex", "--planner-model-codex", "gpt-6.2-sol",
                                    "--executor-model-codex", "gpt-6-luna")
@@ -157,6 +161,7 @@ class TestSetup(unittest.TestCase):
         self.assertFalse((self.root / "opencode.json").exists())
         self.assertIn("`.codex/agents/project-planner.toml`", (self.root / "AGENTS.md").read_text())
 
+    @unittest.skipIf(tomllib is None, "tomllib needs Python 3.11+")
     def test_codex_without_models_inherits_the_session_model(self):
         code, out = self.run_setup("--harness", "codex")
         self.assertEqual(code, 0, out)
@@ -207,8 +212,11 @@ class TestSetup(unittest.TestCase):
                 raise PermissionError("blocked")
             return real_write(path, *a, **k)
 
-        with mock.patch.object(Path, "write_text", write_text), self.assertRaises(PermissionError):
-            self.run_setup("--harness", "codex")
+        with mock.patch.object(Path, "write_text", write_text):
+            code, out = self.run_setup("--harness", "codex")
+        self.assertEqual(code, 6, out)
+        self.assertIn("PermissionError", out)
+        self.assertEqual(list(self.root.iterdir()), [])  # AGENTS.md and CLAUDE.md, written before, are gone
 
     def test_proper_name_inside_quotes_is_accepted(self):
         out = io.StringIO()

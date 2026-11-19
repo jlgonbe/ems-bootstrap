@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Instruction and memory files of any agent harness: their presence means the project already
+# Instruction and memory files of the three supported harnesses: their presence means the project already
 # has a context that someone would have to rescue, which is not what ems-bootstrap does.
 OFFENDING = ("AGENTS.md", "CLAUDE.md", "MEMORY.md", "DECISIONS.md", "opencode.json",
              ".agents", ".claude", ".codex", ".opencode")

@@ -42,6 +42,29 @@ class TestInstall(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertFalse((self.dest / "marker").exists())
 
+    def test_replace_over_a_symlink(self):
+        other = Path(self.tmp.name) / "elsewhere"
+        other.mkdir()
+        self.dest.parent.mkdir(parents=True)
+        self.dest.symlink_to(other, target_is_directory=True)
+        code, out = self.run_install("--replace")
+        self.assertEqual(code, 0, out)
+        self.assertFalse(self.dest.is_symlink())
+        self.assertTrue(other.exists())
+
+    def test_unwritable_destination_reports_instead_of_crashing(self):
+        parent = Path(self.tmp.name) / "ro"
+        parent.mkdir()
+        parent.chmod(0o500)
+        try:
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = install.main(["--harness", "claude", "--dest", str(parent / "ems-bootstrap")])
+            self.assertEqual(code, 3)
+            self.assertIn("tell the user to copy", out.getvalue())
+        finally:
+            parent.chmod(0o700)
+
     def test_default_destinations(self):
         self.assertEqual(install.DESTS["claude"], "~/.claude/skills/ems-bootstrap")
         self.assertEqual(install.DESTS["opencode"], install.DESTS["codex"])

@@ -17,15 +17,15 @@ Never clone or copy this repository straight into a skills folder: it also holds
 1. **Fetch** the repository into a temporary folder, outside any project:
 
    ```sh
-   git clone --depth 1 https://github.com/jlgonbe/ems-bootstrap "$TMPDIR/ems-bootstrap"
+   D=$(mktemp -d) && git clone --depth 1 https://github.com/jlgonbe/ems-bootstrap "$D/ems-bootstrap" && echo "$D"
    ```
 
-   Without `git`, download `https://github.com/jlgonbe/ems-bootstrap/archive/refs/heads/main.zip` and unzip it there.
+   Without `git`, download `https://github.com/jlgonbe/ems-bootstrap/archive/refs/heads/main.zip` and unzip it in a folder made with `mktemp -d`. Write that folder's path out in full in the next steps: a shell variable does not survive between calls in some harnesses.
 
 2. **Install** for the harness you are running in (`opencode`, `codex` or `claude`):
 
    ```sh
-   python3 "$TMPDIR/ems-bootstrap/install.py" --harness <opencode|codex|claude>
+   python3 "<that folder>/ems-bootstrap/install.py" --harness <opencode|codex|claude>
    ```
 
    It copies `SKILL.md`, `references/`, `scripts/` and `assets/` into the user-level skills folder: `~/.agents/skills/ems-bootstrap/` for OpenCode and Codex, `~/.claude/skills/ems-bootstrap/` for Claude Code.
@@ -38,7 +38,7 @@ Never clone or copy this repository straight into a skills folder: it also holds
 
    Writing in the user's home folder needs their approval: ask for it, and do not work around a refusal.
 
-3. **Clean up:** `rm -rf "$TMPDIR/ems-bootstrap"`.
+3. **Clean up:** delete the temporary folder made in step 1 (`rm -rf "<that folder>"`).
 
 ## Then tell the user, in their language
 
@@ -54,4 +54,4 @@ Do **not** run the setup in the folder you are in now unless the user asks you t
 
 - `SKILL.md` is the skill; `references/ems-spec.md` is the specification of what it generates and why.
 - `scripts/gate.py` decides whether a folder is a new project and writes nothing; `scripts/setup.py` renders `assets/` into the project, and removes everything it created if a step fails.
-- `install.py` installs the skill for one harness; `tests/` holds the test suite: `python3 -B -m unittest discover -s tests`.
+- `install.py` installs the skill for one harness; `tests/` holds the test suite: `python3 -B -m unittest discover -s tests` (the scripts need Python 3.9+; two TOML checks need 3.11+ and are skipped below it).
