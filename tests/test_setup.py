@@ -251,11 +251,12 @@ class TestSetup(unittest.TestCase):
         self.assertIn("permission:\n  edit: deny\n  bash: ask\n  task: deny\n", planner)
         self.assertEqual(self.frontmatter(".claude/agents/project-planner.md")[0]["effort"], "high")
         self.assertNotIn("effort", self.frontmatter(".claude/agents/project-plan-executor.md")[0])
-        for marker in ("Created:", "Status: proposed", "## Phase 1", "- [ ] 1.1", "Evidence:", "## Execution log"):
+        for marker in ("Created:", "Status: proposed", "File: plans/<YYYY-MM-DD>_", "## Phase 1", "- [ ] 1.1", "Evidence:", "## Execution log"):
             self.assertIn(marker, planner)
         executor = (self.root / ".opencode/agents/project-plan-executor.md").read_text(encoding="utf-8")
         self.assertIn("plans/<YYYY-MM-DD>_", executor)
         self.assertIn("Never mark a step without its evidence", executor)
+        self.assertIn("Status: completed <today>", executor)
 
     def test_codex_planner_gets_high_reasoning_only_with_a_model(self):
         self.run_setup("--harness", "codex", "--planner-model-codex", "gpt-6.2-sol", "--executor-model-codex", "gpt-6-luna")

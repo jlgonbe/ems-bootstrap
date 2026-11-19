@@ -1,10 +1,17 @@
 # EMS — Easy Memory System
 
-> **Para personas:** EMS (Easy Memory System) es la skill que acompaña a la guía «Tu agente de IA trabaja con información caducada», de la [Bitácora de un Ingeniero de Software](https://bitacoradeuningenierodesoftware.substack.com). No hace falta que la instales a mano. Abre el agente que uses (OpenCode, Claude Code o Codex) y pégale esto:
+> **Para personas:** EMS (Easy Memory System) es la skill que acompaña a la guía "Tu agente de IA trabaja con información caducada", de la [Bitácora de un Ingeniero de Software](https://bitacoradeuningenierodesoftware.substack.com). Te ayuda a montar, en un proyecto nuevo, un sistema para que tu agente de IA trabaje con lo que el proyecto es hoy:
+>
+> - Dejas de repetirle las mismas instrucciones en cada conversación: viven en `AGENTS.md`/`CLAUDE.md`.
+> - Las decisiones y lo aprendido quedan apuntados con su fecha y su porqué, en el momento en que pasan, sin que tengas que acordarte.
+> - Al cerrar cada tarea, el agente revisa si lo que sabe del proyecto sigue siendo cierto, para que el contexto no se quede viejo.
+> - Los cambios complejos se planifican antes de tocar nada, en un plan con fases y casillas que tú apruebas, y quedan con la evidencia de cada paso para revisarlos después.
+>
+> No hace falta que la instales a mano. Abre el agente que uses (OpenCode, Claude Code o Codex) y pégale esto:
 >
 > *"Quiero usar esta skill: https://github.com/jlgonbe/ems-bootstrap. Instálala y dime cómo empezar."*
 >
-> Te pedirá permiso para descargarla e instalarla. El código es corto, solo usa Python 3 y lo puedes revisar aquí antes. Si algo no funciona, escribe a bitacoraingenierosoftware@gmail.com.
+> Te pedirá permiso para descargarla e instalarla. El código es corto, solo usa Python 3 y lo puedes revisar aquí antes. Si ves alguna mejora o algo no te cuadra, escribe a bitacoraingenierosoftware@gmail.com.
 
 ---
 
