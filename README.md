@@ -1,6 +1,6 @@
-# ems-bootstrap
+# EMS — Easy Memory System
 
-> **Para personas:** esta es la skill que acompaña a la guía «Tu agente de IA trabaja con información caducada», de la [Bitácora de un Ingeniero de Software](https://bitacoradeuningenierodesoftware.substack.com). No hace falta que la instales a mano. Abre el agente que uses (OpenCode, Claude Code o Codex) y pégale esto:
+> **Para personas:** EMS (Easy Memory System) es la skill que acompaña a la guía «Tu agente de IA trabaja con información caducada», de la [Bitácora de un Ingeniero de Software](https://bitacoradeuningenierodesoftware.substack.com). No hace falta que la instales a mano. Abre el agente que uses (OpenCode, Claude Code o Codex) y pégale esto:
 >
 > *"Quiero usar esta skill: https://github.com/jlgonbe/ems-bootstrap. Instálala y dime cómo empezar."*
 >
@@ -8,7 +8,7 @@
 
 ---
 
-**For the agent that received this link.** `ems-bootstrap` sets up, in a new and empty project, a small system that keeps your context true over time: `AGENTS.md` (imported by `CLAUDE.md`) as the current state, `MEMORY.md` and `DECISIONS.md` as dated history, a `project-memory` skill that records lessons and decisions the moment they happen, and two agents (`project-planner`, `project-plan-executor`). It works in OpenCode, Claude Code and Codex, and needs `python3` (3.9 or later, standard library only).
+**For the agent that received this link.** This repository is EMS, the Easy Memory System; its skill is called `ems-bootstrap`. It sets up, in a new and empty project, a small system that keeps your context true over time: `AGENTS.md` (imported by `CLAUDE.md`) as the current state, `MEMORY.md` and `DECISIONS.md` as dated history, a `project-memory` skill that records lessons and decisions the moment they happen, and two agents (`project-planner`, `project-plan-executor`). It works in OpenCode, Claude Code and Codex, and needs `python3` (3.9 or later, standard library only).
 
 ## Install it (do this now, with the user's approval)
 

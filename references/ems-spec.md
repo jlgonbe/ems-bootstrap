@@ -1,4 +1,4 @@
-# EMS spec — what `ems-bootstrap` generates and why
+# EMS (Easy Memory System) spec — what `ems-bootstrap` generates and why
 
 The single specification of the system that `ems-bootstrap` sets up in a **new** project. `SKILL.md` says how to run the setup; this file says what the result is. Read it when you need to explain a piece to the user or when something in the result looks wrong.
 
@@ -18,7 +18,7 @@ AGENTS.md                               current state; ≤150 lines (check fails
 CLAUDE.md                               @AGENTS.md and @MEMORY.md (Claude Code entry point)
 MEMORY.md                               lessons M001…, newest first
 DECISIONS.md                            decisions D001…, newest first; born with D001 (adoption)
-opencode.json                           only with OpenCode: "instructions": ["MEMORY.md"]
+opencode.json                           only with OpenCode: "instructions": ["MEMORY.md"], so OpenCode loads MEMORY.md (see Load protocol)
 .agents/skills/project-memory/          the only writer of MEMORY.md and DECISIONS.md
   SKILL.md · references/entry-format.md · scripts/memory.py
 .claude/skills/project-memory           only with Claude Code: relative symlink to the folder above (a copy if symlinks fail)
@@ -39,6 +39,8 @@ Everything above is in **English**. The user's own words are quoted verbatim, in
 | `AGENTS.md` | always, at the start | OpenCode reads it natively; Claude Code through `@AGENTS.md` in `CLAUDE.md` |
 | `MEMORY.md` | always, at the start | Claude Code through `@MEMORY.md`; OpenCode through `opencode.json` `instructions`; Codex, and any other harness, because the `ems:protocol` block of `AGENTS.md` says so |
 | `DECISIONS.md` | on demand | read only to record a decision or to find out why something is the way it is; `AGENTS.md` rules link to the entry they come from |
+
+Why three mechanisms for `MEMORY.md`: OpenCode reads `AGENTS.md` by itself but nothing else, and it ignores `CLAUDE.md` when `AGENTS.md` exists, so the `@MEMORY.md` import that serves Claude Code never reaches it; listing the file in `opencode.json` `instructions` is OpenCode's documented way to load an extra file in every session. Without it, OpenCode would read the lessons only if the agent obeyed the protocol line, which is exactly what Codex depends on.
 
 Lessons change how the agent works on every task, so they are always at hand. Decisions explain why; they are needed only when that why is touched, and loading them always would spend tokens on history.
 
