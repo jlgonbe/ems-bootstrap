@@ -15,7 +15,7 @@ python3 .agents/skills/project-memory/scripts/memory.py <add | set-status | chec
 
 If `python3` is not found (Windows), use `py -3` or `python` with the same arguments.
 
-**MANDATORY — read [`references/entry-format.md`](references/entry-format.md)** before the first `add` or `set-status` of a session: it holds the fields, the vocabularies and what `check` enforces. **close** does not need it.
+**MANDATORY — read [`references/entry-format.md`](references/entry-format.md)** before the first `add` or `set-status` of a session: it holds the fields, the vocabularies and what `check` enforces. **close** does not need it, nor does a **record** that stops at step 2 because the entry is already there.
 
 ## record
 
@@ -26,15 +26,16 @@ If `python3` is not found (Windows), use `py -3` or `python` with the same argum
    - Tie-breakers: a convention the user simply states is an `M` `preference`; it becomes a `D` only if alternatives were weighed. A decision about today's setup keeps only the choice and its reason in the `D`; the resulting fact goes to `AGENTS.md`. A lesson that later becomes a deliberate choice: add the `D` and name the `M` in its `Context`; supersede the `M` (with a new `M`) only if its learning stopped being true. Never supersede across logs: the script refuses it.
    - If still unsure → ask the user **one** question and stop.
 
-   Record only what would change future work and cannot be read from the code or from `AGENTS.md`: one lesson per entry, no diary of what was done today.
+   Record only what would change future work and cannot be read from the code or from `AGENTS.md`.
 2. **Is it already there?** `grep -n "<key words>" MEMORY.md DECISIONS.md AGENTS.md`. (Where `grep` is missing, as in PowerShell, use `Select-String` or your harness's search tool.) If an active entry or a rule says the same, do not add a copy. If an entry says something that is **no longer true**, add the new one, then supersede the old one: dry-run `… set-status <old ID> "superseded by <new ID>"`, read it, and only then repeat it with `--commit`.
 3. **Write in English**; the user's own words go verbatim, in their language, inside `«…»`. Anything with `<…>` goes inside `backticks` (the script rejects a raw tag). The script rejects only accented or non-ASCII letters outside `«…»` and backticks: plain-ASCII words of another language pass, so keeping the rest in English is up to you.
 4. **Dry-run, read it, then commit:**
    ```sh
-   python3 .agents/skills/project-memory/scripts/memory.py add --type M --title "…" --entry-type correction --trigger "…" --learning "…" --evidence "…" [--origin D001]
-   python3 .agents/skills/project-memory/scripts/memory.py add --type D --title "…" --context "…" --alternatives "…" --decision "…" --rationale "…" [--active-rule "AGENTS.md rule N"]
+   python3 .agents/skills/project-memory/scripts/memory.py add --type M --title '…' --entry-type correction --trigger '…' --learning '…' --evidence '…' [--origin D001]
+   python3 .agents/skills/project-memory/scripts/memory.py add --type D --title '…' --context '…' --alternatives '…' --decision '…' --rationale '…' [--active-rule 'AGENTS.md rule N']
    # the same command + --commit
    ```
+   Field text always goes in **single quotes**: inside double quotes a shell runs anything between backticks. Write an apostrophe as `'\''` (sh, bash, zsh) or `''` (PowerShell), or avoid it.
    The script assigns the next ID and today's date, refuses a missing field without writing, and the dry-run prints the entry and its `link:`.
 5. **A decision that creates or changes a rule of `AGENTS.md`.** This order is how rule 5 of `AGENTS.md` is kept: the dry-run in (a) is the decision the rule waits for, and (c) commits it in the same turn.
    - (a) Dry-run the `D` without `--active-rule`: it prints the ID and the `link:` the rule will cite.
@@ -42,8 +43,13 @@ If `python3` is not found (Windows), use `py -3` or `python` with the same argum
    - (c) Dry-run the `D` once more with `--active-rule "AGENTS.md rule N"`, read it, then add `--commit`. Never commit the `D` without `--active-rule` to "record first": the field cannot be added later.
    - (d) If it replaces an older `D` entirely, supersede that one as in step 2. If it replaces it only for some of its rules, do not supersede it: end the changed rule with both links, `(origin: <old link>, <new link>)`, so the old `D` still checks and the new one explains the change.
    - (e) Run `check` → `OK`.
-   - (f) **Removing a rule, or renumbering rules, always needs a new `D` and always supersedes the old one**, because an accepted `D` can never drop a number from its `Active rule`. The new `D`'s `--active-rule` lists every rule of the affected old `D`s that stays in force, numbered as they will be; each of those rules ends with `(origin: <new link>)` (the old link may stay beside it); then supersede every accepted `D` whose `Active rule` names a removed or renumbered rule. In a new project every rule cites D001, so the first removal supersedes D001.
-6. **Report** in one line: `M0XX` or `D0XX` ` · <title> — <why it matters>`. No confirmation is asked before recording; the report is how the user sees it.
+   - (f) **Removing a rule, or renumbering rules, always needs a new `D` and supersedes the old one**, because an accepted `D` can never drop a number from its `Active rule`. In a new project every rule cites D001, so the first removal supersedes D001.
+     1. Dry-run the new `D`. Its `--decision` says what changes and that everything else in the old `D` stays in force; its `--active-rule` lists every rule of the affected old `D`s that stays, numbered as they will be.
+     2. Edit `AGENTS.md`: remove or renumber the rules, and end each listed rule with `(origin: <new link>)` (the old link may stay beside it).
+     3. Commit the new `D` (dry-run it with `--active-rule` first, as in (c)).
+     4. Supersede every accepted `D` whose `Active rule` names a removed or renumbered rule, as in step 2.
+     5. Run `check` → `OK`.
+6. **Report** in one line: `M0XX` or `D0XX` ` · <title> — <why it matters>`.
 
 ## close — before reporting any task as done
 
@@ -56,6 +62,7 @@ If `python3` is not found (Windows), use `py -3` or `python` with the same argum
 
 - **Never edit, renumber or delete an entry**, except its status through `set-status`: `AGENTS.md` links to entries by ID and anchor, and the history is only trustworthy if nothing in it was rewritten. A lesson or a decision that changes is a new entry that supersedes the old one.
 - **Never delete or renumber a rule of `AGENTS.md` outside record step 5(f):** an accepted decision can never drop a rule number from its `Active rule`, only be superseded, so `check` fails until it is.
+- **Never put field text in double quotes:** in sh, bash and zsh a `` `command` `` inside `"…"` runs while you only meant to record it (a lesson about `pytest` would run the tests), and PowerShell drops the backticks. Use single quotes.
 - **Never `--commit` before reading the dry-run**, of `add` or of `set-status`: a wrong wording cannot be edited away, and an entry superseded by mistake can never be made active again.
 - **Never record the same lesson twice, or what a rule of `AGENTS.md` already says:** two copies drift apart, and the agent then reads two truths.
 - **Never put the current state in `MEMORY.md` or `DECISIONS.md`:** it belongs to `AGENTS.md`, which is rewritten, while the logs only grow, so a fact there goes stale with nobody noticing.

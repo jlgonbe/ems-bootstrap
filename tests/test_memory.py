@@ -432,6 +432,10 @@ class TestCheck(Base):
         self.write("DECISIONS.md", DEC_HEAD + D001.rstrip() + "\n- Active rule: AGENTS.md rules 1 and 3\n")
         self.assert_error("D001: Active rule AGENTS.md rule 3 not found")
 
+    def test_active_rule_with_oxford_comma_checks_every_rule(self):
+        self.write("DECISIONS.md", DEC_HEAD + D001.rstrip() + "\n- Active rule: AGENTS.md rules 1, 2, and 3\n")
+        self.assert_error("D001: Active rule AGENTS.md rule 3 not found")
+
     def test_active_rule_ignores_ids_after_the_rule_list(self):
         self.write("DECISIONS.md", DEC_HEAD + D001.rstrip() + "\n- Active rule: AGENTS.md rule 1, see D001\n")
         code, out, _ = self.run_cli("check")

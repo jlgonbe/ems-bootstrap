@@ -38,16 +38,16 @@ If an answer is ambiguous, ask once more about that point only.
 
 ## 3. Run the setup
 
-Translate answers 2 and 3 into English for the harness files; a proper name that is not plain English keeps its spelling inside `«…»`, and commands and paths go inside `backticks` (the script accepts accented letters in both). Give the language its English name (`Spanish`, not `Español`). Write 3 to 6 short phrases the user would say in their language to record or close, each inside `«…»`, for the skill's triggers (if the language is English, pass no `--triggers`: the defaults cover it). Show the user the translated answers and the trigger phrases in one line each and wait for their OK; then run:
+Translate answers 2 and 3 into English for the harness files; a proper name that is not plain English keeps its spelling inside `«…»`, and commands and paths go inside `backticks` (the script accepts accented letters in both). Give the language its English name (`Spanish`, not `Español`). Write 3 to 6 short phrases the user would say in their language to record or close, each inside `«…»`, for the skill's triggers (if the language is English, pass no `--triggers`: the defaults cover it). Show the user the translated answers and the trigger phrases in one line each and wait for their OK; then run it, with every answer in **single quotes** (inside double quotes a shell runs anything between backticks):
 
 ```sh
 python3 "<SKILL_DIR>/scripts/setup.py" --root . \
-  --project-name "<name>" --project "<answer 2, English>" --how "<answer 3, English>" \
-  --language "<English name>" --harness "<opencode,claude,codex: the ones chosen>" \
-  [--planner-model-opencode "<provider/model-id>"] [--executor-model-opencode "<provider/model-id>"] \
+  --project-name '<name>' --project '<answer 2, English>' --how '<answer 3, English>' \
+  --language '<English name>' --harness '<opencode,claude,codex: the ones chosen>' \
+  [--planner-model-opencode '<provider/model-id>'] [--executor-model-opencode '<provider/model-id>'] \
   [--planner-model-claude opus] [--executor-model-claude sonnet] \
-  [--planner-model-codex "<id>"] [--executor-model-codex "<id>"] \
-  --triggers "«…», «…», «…»"
+  [--planner-model-codex '<id>'] [--executor-model-codex '<id>'] \
+  --triggers '«…», «…», «…»'
 ```
 
 | Exit | Meaning | Do |

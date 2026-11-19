@@ -363,7 +363,7 @@ def run_check(root: Path, override: dict[str, str] | None = None) -> list[str]:
                 errors.append(f"{e.id}: Origin cites itself")
         active_rule = e.fields.get("Active rule", "")
         if e.kind == "D" and active_rule:
-            ar = re.match(r"^AGENTS\.md (?:rule (\d+)|rules (\d+(?:(?:, | and )\d+)+))\b", active_rule)
+            ar = re.match(r"^AGENTS\.md (?:rule (\d+)|rules (\d+(?:(?:, | and |, and )\d+)+))(?!\d|,\s*(?:and\s+)?\d)", active_rule)
             if not ar:
                 errors.append(f"{e.id}: Active rule must start with 'AGENTS.md rule N' or 'AGENTS.md rules N and M'")
             else:
