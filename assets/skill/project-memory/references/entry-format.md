@@ -3,7 +3,7 @@
 Authoritative format of both logs. `scripts/memory.py` writes every entry with exactly these labels; never write an entry by hand.
 
 ## Language
-Labels, vocabularies, IDs, paths and anchors are always English (the script parses them). Content is English too; the user's own words go verbatim, in their language, inside `«…»`. `check` rejects a non-English letter outside `«…»` and `backticks`.
+Labels, vocabularies, IDs, paths and anchors are always English (the script parses them). Content is English too; the user's own words go verbatim, in their language, inside `«…»`. `check` rejects a non-ASCII letter (or ¿ ¡) outside `«…»` and `backticks`; plain-ASCII words of another language pass, so keeping the rest in English is up to the writer.
 
 ## Order and rendering
 - **Newest first:** `add` inserts every new entry at the top of its log, right under the header; `check` fails if IDs are not in descending order.
@@ -49,6 +49,6 @@ Every `M0XX` / `D0XX` cited in `AGENTS.md` is a Markdown link to its entry, e.g.
 ## What `check` enforces
 - **Headers:** `AGENTS.md`, `MEMORY.md` and `DECISIONS.md` start with `<!-- ems:responsibility:`; no `{{FILL:…}}` left in them or in `CLAUDE.md`; `CLAUDE.md`, if present, imports `@AGENTS.md`.
 - **`AGENTS.md`:** at most 150 lines (above that, move what is not needed in every session to a referenced file); the anchors `ems:rules`, `ems:map`, `ems:skills`, `ems:protocol` opened and closed once; every numbered rule ends in `(origin: <link>)` to an existing entry; every ID written as its link; every skill path in `ems:skills` exists.
-- **Entries:** only the labels above, each once; IDs unique and newest first; `Date` a real date; `Type` and `Status` within their vocabularies; `Origin` a list of existing IDs without repeats or self-citation; `superseded by X` names a later entry of the same log; a D's `Active rule` names rules that exist and cite it while the D is `accepted`; M entries only in `MEMORY.md`, D entries only in `DECISIONS.md`.
+- **Entries** (besides the raw-tag and non-ASCII rules of «Language» and «Order and rendering»): only the labels above, each once; IDs unique and newest first; `Date` a real date; `Type` and `Status` within their vocabularies; `Origin` a list of existing IDs without repeats or self-citation; `superseded by X` names a later entry of the same log; a D's `Active rule` names rules that exist and cite it while the D is `accepted`; M entries only in `MEMORY.md`, D entries only in `DECISIONS.md`.
 
 `add` and `set-status` run these checks on the entry they write and write nothing if it fails them; problems elsewhere (an `AGENTS.md` link, another entry) show up only in `check`.

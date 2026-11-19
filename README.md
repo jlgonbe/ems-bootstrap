@@ -20,7 +20,7 @@ Never clone or copy this repository straight into a skills folder: it also holds
    D=$(mktemp -d) && git clone --depth 1 https://github.com/jlgonbe/ems-bootstrap "$D/ems-bootstrap" && echo "$D"
    ```
 
-   Without `git`, download `https://github.com/jlgonbe/ems-bootstrap/archive/refs/heads/main.zip` and unzip it in a folder made with `mktemp -d`. Write that folder's path out in full in the next steps: a shell variable does not survive between calls in some harnesses.
+   On Windows, clone into any new folder under `%TEMP%`. Without `git`, download `https://github.com/jlgonbe/ems-bootstrap/archive/refs/heads/main.zip` and unzip it in a folder made with `mktemp -d`. Write that folder's path out in full in the next steps: a shell variable does not survive between calls in some harnesses.
 
 2. **Install** for the harness you are running in (`opencode`, `codex` or `claude`):
 
@@ -34,7 +34,8 @@ Never clone or copy this repository straight into a skills folder: it also holds
    |---|---|
    | 0 | installed: go on |
    | 2 | it is already installed: ask the user whether to replace it, and only then run it again with `--replace` |
-   | 3 | the folder could not be written (your harness may only let you write inside the current folder): show the user the message, which says what to copy where, and stop |
+   | 3 | the download is incomplete, or the folder could not be written (your harness may only let you write inside the current folder): show the user the message, which says what to do, and stop |
+   | anything else, or a traceback | show the output to the user and stop |
 
    Writing in the user's home folder needs their approval: ask for it, and do not work around a refusal.
 

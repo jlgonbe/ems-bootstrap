@@ -33,6 +33,10 @@ def main(argv: list[str] | None = None) -> int:
     if (dest.exists() or dest.is_symlink()) and not a.replace:
         print(f"already installed: {dest} exists; ask the user, then run again with --replace")
         return 2
+    missing = [part for part in PARTS if not (HERE / part).exists()]
+    if missing:
+        print(f"error: incomplete download: {', '.join(missing)} missing in {HERE}; download the repository again")
+        return 3
     staging = dest.with_name(dest.name + ".new")
     try:
         if staging.exists():

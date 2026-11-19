@@ -177,7 +177,9 @@ def cmd_add(a: argparse.Namespace) -> int:
     if not a.title:
         missing.insert(0, "title")
     if missing:
-        print(f"error: missing required field(s) for {kind}: {', '.join(missing)}", file=sys.stderr)
+        flags = {"title": "--title", **{k: f"--{v}" for k, v in {**M_ONLY, **D_ONLY}.items()}}
+        print(f"error: missing required field(s) for {kind}: "
+              + ", ".join(f"{f} ({flags[f]})" if f in flags else f for f in missing), file=sys.stderr)
         return 2
     if kind == "M":
         if values["Type"] not in TYPES:
@@ -206,7 +208,7 @@ def cmd_add(a: argparse.Namespace) -> int:
         print(f"(dry-run: nothing written; re-run with --commit to add {kind}{num:03d} at the top of {path.name})")
         return 0
     path.write_text(new_text, encoding="utf-8")
-    print(f"written: {kind}{num:03d} — {a.title} → top of {path.name}")
+    print(f"written: {kind}{num:03d} — {a.title} -> top of {path.name}")
     return 0
 
 
@@ -246,10 +248,10 @@ def cmd_set_status(a: argparse.Namespace) -> int:
             print("nothing written", file=sys.stderr)
             return 2
         if not a.commit:
-            print(f"(dry-run) {a.id}: Status → {a.status}; re-run with --commit to write")
+            print(f"(dry-run) {a.id}: Status -> {a.status}; re-run with --commit to write")
             return 0
         path.write_text(new_text, encoding="utf-8")
-        print(f"written: {a.id} Status → {a.status}")
+        print(f"written: {a.id} Status -> {a.status}")
         return 0
     print(f"error: {a.id} not found in {path.name}", file=sys.stderr)
     return 2
@@ -431,6 +433,9 @@ def cmd_link(a: argparse.Namespace) -> int:
 
 # ---------------------------------------------------------------- cli
 def main(argv: list[str] | None = None) -> int:
+    for stream in (sys.stdout, sys.stderr):  # titles and quotes are UTF-8 even where the console is not (Windows)
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--root", default=str(DEFAULT_ROOT), help="project root (default: inferred)")
     sub = p.add_subparsers(dest="cmd", required=True)

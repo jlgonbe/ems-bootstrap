@@ -65,6 +65,18 @@ class TestInstall(unittest.TestCase):
         finally:
             parent.chmod(0o700)
 
+    def test_incomplete_download_is_reported(self):
+        real_exists = Path.exists
+
+        def exists(path):
+            return False if path == install.HERE / "scripts" else real_exists(path)
+
+        from unittest import mock
+        with mock.patch.object(Path, "exists", exists):
+            code, out = self.run_install()
+        self.assertEqual(code, 3)
+        self.assertIn("incomplete download: scripts", out)
+
     def test_default_destinations(self):
         self.assertEqual(install.DESTS["claude"], "~/.claude/skills/ems-bootstrap")
         self.assertEqual(install.DESTS["opencode"], install.DESTS["codex"])
