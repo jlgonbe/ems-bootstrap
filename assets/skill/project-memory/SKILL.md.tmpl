@@ -1,0 +1,54 @@
+---
+name: project-memory
+description: "Project memory of this repository: records lessons in MEMORY.md and decisions in DECISIONS.md through scripts/memory.py, the moment they happen and without asking first, and closes every task by recording what was not recorded yet and checking that AGENTS.md still describes the project. Use when the user corrects the agent or states a preference, a choice between alternatives is made, something non-obvious is found, a lesson or decision stops being true, a task is about to be reported as done, or the user says «remember this», «note this down», «don't do that again», «next time», «record this decision», «close the task», «done» when reporting a task finished, {{FILL:triggers}}. NOT for the current state of the project (that is AGENTS.md, rewritten in place) and NOT for curating or consolidating old entries, which this system does not do."
+---
+
+# project-memory
+
+Two processes keep this project's context true over time: **record** (Loop 1: write a lesson or a decision the moment it happens) and **close** (Loop 2: before a task is reported done, record what is missing and check `AGENTS.md`). The only writer of `MEMORY.md` and `DECISIONS.md` is `scripts/memory.py` (`add` · `set-status` · `check` · `link`, Python 3 standard library); never write, renumber or reformat an entry by hand.
+
+Run it from the project root and **write the full command in every shell call** (a shell function or variable does not survive between calls in some harnesses):
+
+```sh
+python3 .agents/skills/project-memory/scripts/memory.py <add | set-status | check | link> …
+```
+
+**MANDATORY — read [`references/entry-format.md`](references/entry-format.md)** before the first `add` or `set-status` of a session: it holds the fields, the vocabularies and what `check` enforces. **close** does not need it.
+
+## record
+
+1. **Classify.**
+   - A deliberate choice between alternatives (a library, a layout, a convention, a rule) → `D`.
+   - Something learned from experience → `M`, with its `Type`: `correction` (the user corrected you), `failure` (you failed and noticed), `preference` (the user said how they want it), `finding` (something non-obvious).
+   - A fact about how the project is **today** (which tool is installed, which file does what, which command builds) → neither: it goes into `AGENTS.md`, rewritten in place.
+   - Tie-breakers: a convention the user simply states is an `M` `preference`; it becomes a `D` only if alternatives were weighed. A decision about today's setup keeps only the choice and its reason in the `D`; the resulting fact goes to `AGENTS.md`.
+   - If still unsure → ask the user **one** question and stop.
+
+   Record only what would change future work and cannot be read from the code or from `AGENTS.md`: one lesson per entry, no diary of what was done today.
+2. **Is it already there?** `grep -n "<key words>" MEMORY.md DECISIONS.md AGENTS.md`. If an active entry or a rule says the same, do not add a copy. If an entry says something that is **no longer true**, add the new one, then supersede the old one: dry-run `… set-status <old ID> "superseded by <new ID>"`, read it, and only then repeat it with `--commit`.
+3. **Write in English**; the user's own words go verbatim, in their language, inside `«…»`. Anything with `<…>` goes inside `backticks` (the script rejects a raw tag). The script also rejects non-English letters outside `«…»` and backticks.
+4. **Dry-run, read it, then commit:**
+   ```sh
+   python3 .agents/skills/project-memory/scripts/memory.py add --type M --title "…" --entry-type correction --trigger "…" --learning "…" --evidence "…" [--origin D001]
+   python3 .agents/skills/project-memory/scripts/memory.py add --type D --title "…" --context "…" --alternatives "…" --decision "…" --rationale "…" [--active-rule "AGENTS.md rule N"]
+   # the same command + --commit
+   ```
+   The script assigns the next ID and today's date, refuses a missing field without writing, and the dry-run prints the entry and its `link:`.
+5. **A decision that creates or changes a rule of `AGENTS.md`:** (a) dry-run the `D` without `--active-rule`: it prints the ID and the `link:` the rule will cite; (b) edit the rule in `AGENTS.md` so it ends in `(origin: <that link>)`; (c) dry-run the `D` once more with `--active-rule "AGENTS.md rule N"`, read it, then add `--commit`; (d) if it replaces an older `D` entirely, supersede that one as in step 2; if it replaces it only for some of its rules, do not supersede it: end the changed rule with both links, `(origin: <old link>, <new link>)`, so the old `D` still checks and the new one explains the change; (e) run `check` → `OK`. Between (b) and (c) `check` fails on the link to the not-yet-written `D`: that is expected.
+6. **Report** in one line: `M0XX · <title> — <why it matters>`. No confirmation is asked before recording; the report is how the user sees it.
+
+## close — before reporting any task as done
+
+1. Go over the task: corrections from the user, choices between alternatives, non-obvious findings not recorded yet → each one through **record**. Unfinished work is not memory: it goes in your report to the user.
+2. **Refresh the picture:** did the task change something `AGENTS.md` describes (what the project is, how it is worked on, its structure, a rule)? If so, rewrite that part now; a rule changes only through step 5 of record.
+3. Run `check` → must print `OK`. An error you introduced in this task, fix now and mention it (an error in a committed entry is fixed by a new entry that supersedes it, never by editing); any other error, **report it** to the user and do not fix it silently.
+4. Nothing to record and nothing to refresh → say so in one line: `Memory: nothing to record.`
+
+## Never, and why
+
+- **Never edit, renumber or delete an entry**, except its status through `set-status`: `AGENTS.md` links to entries by ID and anchor, and the history is only trustworthy if nothing in it was rewritten. A lesson or a decision that changes is a new entry that supersedes the old one.
+- **Never `--commit` before reading the dry-run**, of `add` or of `set-status`: a wrong wording cannot be edited away, and an entry superseded by mistake can never be made active again.
+- **Never record the same lesson twice, or what a rule of `AGENTS.md` already says:** two copies drift apart, and the agent then reads two truths.
+- **Never put the current state in `MEMORY.md` or `DECISIONS.md`:** it belongs to `AGENTS.md`, which is rewritten, while the logs only grow, so a fact there goes stale with nobody noticing.
+- **Never record what the code or a test already shows** (a signature, which error is raised): it goes stale silently; record the rejected alternative and the reason instead.
+- **Never write secrets or personal data the lesson does not need:** `MEMORY.md` is read in every session.

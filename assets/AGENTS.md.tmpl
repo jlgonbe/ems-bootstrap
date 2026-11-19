@@ -1,0 +1,57 @@
+<!-- ems:responsibility: current state of this project for any AI agent: what it is, how it is worked on, the rules in force, which file holds what, skills and agents, and the memory protocol. History lives in MEMORY.md and DECISIONS.md. -->
+# AGENTS.md — {{FILL:project_name}}
+
+Read this file first, every session. If another document contradicts it, this file wins; record the conflict as a lesson with the `project-memory` skill.
+
+## What this project is
+
+{{FILL:project}}
+
+## How we work
+
+{{FILL:how}}
+
+## Languages
+
+- Harness files (this file, `CLAUDE.md`, `MEMORY.md`, `DECISIONS.md`, skills and agents) are in English; the user's own words are quoted verbatim, in their language, inside «…».
+- The project's own files are in {{FILL:language}}.
+- Talk to the user in the language they write in.
+
+<!-- ems:rules -->
+## Rules in force
+
+1. Write `MEMORY.md` and `DECISIONS.md` only through `.agents/skills/project-memory/scripts/memory.py`; never edit, renumber or delete an entry by hand. (origin: [D001](DECISIONS.md#d001--adopt-the-ems-project-memory-system))
+2. When something needs clarifying, ask instead of assuming; one question, then wait. (origin: [D001](DECISIONS.md#d001--adopt-the-ems-project-memory-system))
+3. Say so when the user's idea has a problem or a better option exists, with the reason; do not agree by default. (origin: [D001](DECISIONS.md#d001--adopt-the-ems-project-memory-system))
+4. Before a change that touches several files or whose approach is not obvious, get a plan from `project-planner`, show it to the user and wait for their OK; then `project-plan-executor` carries it out. (origin: [D001](DECISIONS.md#d001--adopt-the-ems-project-memory-system))
+5. Change a rule of this file only after recording in `DECISIONS.md` the decision that changes it, and end the rule with `(origin: <link>)` from `memory.py link`. (origin: [D001](DECISIONS.md#d001--adopt-the-ems-project-memory-system))
+<!-- /ems:rules -->
+
+<!-- ems:map -->
+## Which file holds what
+
+| File | Holds | Does not hold |
+|---|---|---|
+| `AGENTS.md` | the current state: what the project is, how it is worked on, the rules in force | history, the reasons behind decisions |
+| `CLAUDE.md` | Claude Code's entry point: imports `AGENTS.md` and `MEMORY.md` | anything else |
+| `MEMORY.md` | dated lessons (`M0XX`), newest first, only added | decisions, the current state |
+| `DECISIONS.md` | dated decisions (`D0XX`), newest first, only added | lessons, the current state |
+<!-- /ems:map -->
+
+<!-- ems:skills -->
+## Skills and agents
+
+| Name | Path | When |
+|---|---|---|
+| project-memory | `.agents/skills/project-memory/SKILL.md` | record a decision or a lesson the moment it happens; close every task |
+{{FILL:agents_rows}}
+<!-- /ems:skills -->
+
+<!-- ems:protocol -->
+## Project memory
+
+- At the start of every session read this file and `MEMORY.md`. Read `DECISIONS.md` only to record a decision or to find out why something is the way it is.
+- When the user corrects you, a choice between alternatives is made, or you find something non-obvious: follow **record** in `.agents/skills/project-memory/SKILL.md` (write directly, then report in one line).
+- Before reporting any task as done: follow **close** in the same skill.
+- When this file passes 150 lines, `memory.py check` fails: move what is not needed in every session to a referenced file that is read only when it applies.
+<!-- /ems:protocol -->
