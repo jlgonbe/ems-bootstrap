@@ -13,7 +13,7 @@ Run it from the project root and **write the full command in every shell call** 
 python3 .agents/skills/project-memory/scripts/memory.py <add | set-status | check | link> …
 ```
 
-If `python3` is not found (Windows), use `py -3` or `python` with the same arguments.
+If `python3` is not found or does not print the help (Windows), use `py -3` or `python` with the same arguments.
 
 **MANDATORY — read [`references/entry-format.md`](references/entry-format.md)** before the first `add` or `set-status` of a session: it holds the fields, the vocabularies and what `check` enforces. **close** does not need it, nor does a **record** that stops at step 2 because the entry is already there.
 
@@ -27,7 +27,7 @@ If `python3` is not found (Windows), use `py -3` or `python` with the same argum
    - If still unsure → ask the user **one** question and stop.
 
    Record only what would change future work and cannot be read from the code or from `AGENTS.md`.
-2. **Is it already there?** `grep -n "<key words>" MEMORY.md DECISIONS.md AGENTS.md`. (Where `grep` is missing, as in PowerShell, use `Select-String` or your harness's search tool.) If an active entry or a rule says the same, do not add a copy. If an entry says something that is **no longer true**, add the new one, then supersede the old one: dry-run `… set-status <old ID> "superseded by <new ID>"`, read it, and only then repeat it with `--commit`.
+2. **Is it already there?** `grep -n "<key words>" MEMORY.md DECISIONS.md AGENTS.md`. (Where `grep` is missing, as in PowerShell, use `Select-String` or your harness's search tool.) If an active entry or a rule says the same, do not add a copy. If an entry says something that is **no longer true**, add the new one, then supersede the old one: dry-run `… set-status <old ID> 'superseded by <new ID>'`, read it, and only then repeat it with `--commit`.
 3. **Write in English**; the user's own words go verbatim, in their language, inside `«…»`. Anything with `<…>` goes inside `backticks` (the script rejects a raw tag). The script rejects only accented or non-ASCII letters outside `«…»` and backticks: plain-ASCII words of another language pass, so keeping the rest in English is up to you.
 4. **Dry-run, read it, then commit:**
    ```sh
@@ -40,13 +40,13 @@ If `python3` is not found (Windows), use `py -3` or `python` with the same argum
 5. **A decision that creates or changes a rule of `AGENTS.md`.** This order is how rule 5 of `AGENTS.md` is kept: the dry-run in (a) is the decision the rule waits for, and (c) commits it in the same turn.
    - (a) Dry-run the `D` without `--active-rule`: it prints the ID and the `link:` the rule will cite.
    - (b) Edit the rule in `AGENTS.md` so it ends in `(origin: <that link>)`. Until (c), `check` fails on the link to the not-yet-written `D`: that is expected.
-   - (c) Dry-run the `D` once more with `--active-rule "AGENTS.md rule N"`, read it, then add `--commit`. Never commit the `D` without `--active-rule` to "record first": the field cannot be added later.
+   - (c) Dry-run the `D` once more with `--active-rule 'AGENTS.md rule N'`, read it, then add `--commit`. Never commit the `D` without `--active-rule` to "record first": the field cannot be added later.
    - (d) If it replaces an older `D` entirely, supersede that one as in step 2. If it replaces it only for some of its rules, do not supersede it: end the changed rule with both links, `(origin: <old link>, <new link>)`, so the old `D` still checks and the new one explains the change.
    - (e) Run `check` → `OK`.
    - (f) **Removing a rule, or renumbering rules, always needs a new `D` and supersedes the old one**, because an accepted `D` can never drop a number from its `Active rule`. In a new project every rule cites D001, so the first removal supersedes D001.
-     1. Dry-run the new `D`. Its `--decision` says what changes and that everything else in the old `D` stays in force; its `--active-rule` lists every rule of the affected old `D`s that stays, numbered as they will be.
-     2. Edit `AGENTS.md`: remove or renumber the rules, and end each listed rule with `(origin: <new link>)` (the old link may stay beside it).
-     3. Commit the new `D` (dry-run it with `--active-rule` first, as in (c)).
+     1. Dry-run the new `D` **without** `--active-rule` to get its link. Its `--decision` says what changes and that everything else in the old `D` stays in force. Note which rules of the affected old `D`s stay, and their new numbers.
+     2. Edit `AGENTS.md`: remove or renumber the rules, and end each rule that stays with `(origin: <new link>)` (the old link may stay beside it). `check` fails until step 4: that is expected.
+     3. Dry-run the new `D` again with `--active-rule` listing those rules by their new numbers, read it, then commit it.
      4. Supersede every accepted `D` whose `Active rule` names a removed or renumbered rule, as in step 2.
      5. Run `check` → `OK`.
 6. **Report** in one line: `M0XX` or `D0XX` ` · <title> — <why it matters>`.

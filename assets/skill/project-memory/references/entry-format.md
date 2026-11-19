@@ -35,7 +35,7 @@ Labels, vocabularies, IDs, paths and anchors are always English (the script pars
 - Alternatives considered: <options and why they were rejected; "none" if there were none>
 - Decision: <what is decided>
 - Rationale: <why>
-- Active rule: <optional; "AGENTS.md rule N" or "AGENTS.md rules N and M" when it creates or changes rules>
+- Active rule: <optional; "AGENTS.md rule N", or a list such as "AGENTS.md rules N and M" or "AGENTS.md rules N, M and P" (an Oxford comma is accepted), when it creates or changes rules>
 ```
 
 `Status`: `accepted` · `superseded by D0XX` (a later decision replaced it).
