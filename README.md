@@ -12,6 +12,8 @@
 
 ## Install it (do this now, with the user's approval)
 
+Never clone or copy this repository straight into a skills folder: it also holds `tests/` and this `README.md`, which are for people reviewing it, not for the skill. `install.py` copies only what the skill needs.
+
 1. **Fetch** the repository into a temporary folder, outside any project:
 
    ```sh
@@ -20,25 +22,23 @@
 
    Without `git`, download `https://github.com/jlgonbe/ems-bootstrap/archive/refs/heads/main.zip` and unzip it there.
 
-2. **Copy only what the skill needs** into the user-level skills folder of the harness you are running in. Never copy `tests/`, `README.md` or `.git/`: they are for people who review the repository, not for the skill.
-
-   | You are | Install into |
-   |---|---|
-   | OpenCode | `~/.agents/skills/ems-bootstrap/` |
-   | Codex | `~/.agents/skills/ems-bootstrap/` |
-   | Claude Code | `~/.claude/skills/ems-bootstrap/` |
+2. **Install** for the harness you are running in (`opencode`, `codex` or `claude`):
 
    ```sh
-   DEST=~/.agents/skills/ems-bootstrap        # or ~/.claude/skills/ems-bootstrap in Claude Code
-   mkdir -p "$DEST"
-   cp -R "$TMPDIR/ems-bootstrap/SKILL.md" "$TMPDIR/ems-bootstrap/references" \
-         "$TMPDIR/ems-bootstrap/scripts" "$TMPDIR/ems-bootstrap/assets" "$DEST/"
-   rm -rf "$TMPDIR/ems-bootstrap"
+   python3 "$TMPDIR/ems-bootstrap/install.py" --harness <opencode|codex|claude>
    ```
 
-   Writing in the user's home folder needs their approval: ask for it, do not work around a refusal. If `$DEST` already exists, ask before replacing it. If your harness lets you write only inside the current folder, tell the user which folder to copy where, and stop.
+   It copies `SKILL.md`, `references/`, `scripts/` and `assets/` into the user-level skills folder: `~/.agents/skills/ems-bootstrap/` for OpenCode and Codex, `~/.claude/skills/ems-bootstrap/` for Claude Code.
 
-3. **Check it:** `ls "$DEST"` shows `SKILL.md`, `assets`, `references` and `scripts`, and no `tests`.
+   | Exit | Do |
+   |---|---|
+   | 0 | installed: go on |
+   | 2 | it is already installed: ask the user whether to replace it, and only then run it again with `--replace` |
+   | 3 | the folder could not be written (your harness may only let you write inside the current folder): show the user the message, which says what to copy where, and stop |
+
+   Writing in the user's home folder needs their approval: ask for it, and do not work around a refusal.
+
+3. **Clean up:** `rm -rf "$TMPDIR/ems-bootstrap"`.
 
 ## Then tell the user, in their language
 
@@ -54,4 +54,4 @@ Do **not** run the setup in the folder you are in now unless the user asks you t
 
 - `SKILL.md` is the skill; `references/ems-spec.md` is the specification of what it generates and why.
 - `scripts/gate.py` decides whether a folder is a new project and writes nothing; `scripts/setup.py` renders `assets/` into the project, and removes everything it created if a step fails.
-- `tests/` holds the test suite: `python3 -B -m unittest discover -s tests`.
+- `install.py` installs the skill for one harness; `tests/` holds the test suite: `python3 -B -m unittest discover -s tests`.
