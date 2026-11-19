@@ -30,15 +30,15 @@ Ask them together in one message, each with its default, so the user can answer 
 4. **Harnesses**: OpenCode, Claude Code, Codex, or several. Default: the one you are running in.
 5. **Models of the two agents.** `project-planner` thinks before anything is edited, so it deserves a deep model; `project-plan-executor` carries out a plan the user already approved, so a cheaper one is enough. Suggest:
    - Claude Code: the aliases `opus` (planner) and `sonnet` (executor).
-   - OpenCode: IDs exactly as `opencode models` prints them (`provider/model-id`): Opus-class to plan, Sonnet-class to execute; on OpenAI, Sol, then Terra or Luna.
-   - Codex: IDs exactly as its `/model` picker shows them: Sol to plan, Terra or Luna to execute.
+   - OpenCode: IDs exactly as `opencode models` prints them (`provider/model-id`): Opus-class to plan, Sonnet-class to execute; on OpenAI, Sol, then Terra or Luna. These are tiers to look up in the list, never values to pass as they are.
+   - Codex: IDs exactly as its `/model` picker shows them: Sol-tier to plan, Terra- or Luna-tier to execute (tiers, not IDs).
    - Default: no model written, so both agents use the session's model.
 
 If an answer is ambiguous, ask once more about that point only.
 
 ## 3. Run the setup
 
-Translate answers 2 and 3 into English for the harness files; a proper name that is not plain English keeps its spelling inside `«…»`, and commands and paths go inside `backticks` (the script accepts accented letters in both). Give the language its English name (`Spanish`, not `Español`). Write 3 to 6 short phrases the user would say in their language to record or close, each inside `«…»`, for the skill's triggers (if the language is English, pass no `--triggers`: the defaults cover it). Show the user the translated answers and the trigger phrases in one line each and wait for their OK; then run it, with every answer in **single quotes** (inside double quotes a shell runs anything between backticks):
+Translate answers 2 and 3 into English for the harness files; inside them, a proper name that is not plain English keeps its spelling inside `«…»`, and commands and paths go inside `backticks` (the script accepts accented letters in both). The project name goes in as it is. A vague answer 3 («lo normal») becomes `Not defined yet.`, never an invented convention. Give the language its English name (`Spanish`, not `Español`). Write 3 to 6 short phrases the user would say in their language to record or close, each inside `«…»`, for the skill's triggers (if the language is English, pass no `--triggers`: the defaults cover it). Show the user the translated answers and the trigger phrases in one line each and wait for their OK; then run it, with every answer in **single quotes** (inside double quotes a shell runs anything between backticks):
 
 ```sh
 python3 "<SKILL_DIR>/scripts/setup.py" --root . \
@@ -80,6 +80,7 @@ Close with three practical lines: correct the agent whenever it gets something w
 - **Never invent a model ID:** a wrong ID makes the agent fail the first time it is used; write only what `opencode models` or Codex's `/model` lists, or a Claude Code alias the user accepted, or leave it out.
 - **Never edit the generated files by hand to get past a failed check:** the check is what guarantees the links between rules and decisions; fix the input and run `setup.py` again (a failed run cleans up after itself, so the gate passes).
 - **Never run `setup.py` before the user confirmed the translated answers:** a successful run cannot be repeated (the gate then sees `AGENTS.md`), and D001 keeps the answers for good.
+- **Never leave a raw apostrophe inside a single-quoted answer** (*project's*, *don't*): it ends the argument and the call breaks or merges arguments. Write it as `'\''` (sh, bash, zsh) or `''` (PowerShell), or rephrase.
 - **Never run the gate or the setup anywhere but the root of the project the user means:** the gate only inspects `--root .`, so a subfolder of a project whose `AGENTS.md` is above it would pass.
 - **Never delete `.ems-pending/` before every pending file exists at its target:** it is the only copy of those files.
 - **Never test the agents or the memory in the session that ran the setup:** the harness has not loaded them yet, so the checks fail and the user concludes it does not work.

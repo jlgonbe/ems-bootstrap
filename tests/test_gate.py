@@ -56,6 +56,22 @@ class TestGate(unittest.TestCase):
         git(self.root, "commit", "-m", "scaffold")
         self.assertEqual(self.run_gate(), (0, "new project"))
 
+    def test_git_that_cannot_count_commits_is_not_assumed_new(self):
+        git(self.root, "init", "-q")
+        commit(self.root, "a.txt")
+        real_run = gate.subprocess.run
+
+        def broken_count(cmd, *a, **k):
+            if "rev-list" in cmd:
+                return real_run(["git", "-C", str(self.root), "rev-list", "--count", "no-such-ref"], *a, **k)
+            return real_run(cmd, *a, **k)
+
+        from unittest import mock
+        with mock.patch.object(gate.subprocess, "run", broken_count):
+            code, out = self.run_gate()
+        self.assertEqual(code, 1)
+        self.assertIn("git could not count its commits", out)
+
     def test_two_commits_is_history(self):
         git(self.root, "init", "-q")
         commit(self.root, "a.txt")

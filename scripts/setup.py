@@ -42,7 +42,7 @@ D001_TITLE = "Adopt the EMS project memory system"
 PROTECTED = (".claude/", ".agents/", ".codex/")
 PENDING = ".ems-pending"
 MAX_DESCRIPTION = 1024  # skill description limit of the harnesses
-DEFAULT_TRIGGER = "«remember this»"
+DEFAULT_TRIGGER = "«write it down»"
 
 
 def staged_path(root: Path, rel: str) -> Path:

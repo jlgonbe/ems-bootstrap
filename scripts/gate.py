@@ -58,7 +58,11 @@ def reasons(root: Path) -> list[str]:
             commits = int(r.stdout.strip() or "0")
             if commits > MAX_COMMITS:
                 out.append(f"git history has {commits} commits (at most {MAX_COMMITS} for a new project)")
-        # a repository with no commit yet makes rev-list fail: that is a new project
+        elif not (root / ".git").is_dir() or subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "--verify", "-q", "HEAD"], capture_output=True).returncode == 0:
+            # HEAD exists but its commits cannot be counted (ownership, corruption): do not assume it is new
+            out.append("there is a .git folder but git could not count its commits: " + (r.stderr.strip() or "unknown error"))
+        # otherwise the repository has no commit yet, which is a new project
     return out
 
 
