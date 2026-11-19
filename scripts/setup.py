@@ -100,10 +100,13 @@ def fill(text: str, values: dict[str, str]) -> str:
     return text
 
 
-def model_line(model: str | None, harness: str) -> str:
+def model_line(model: str | None, harness: str, role: str) -> str:
     if not model:
         return ""
-    return f'model = "{model}"\n' if harness == "codex" else f"model: {model}\n"
+    if harness != "codex":
+        return f"model: {model}\n"
+    # Codex keeps the parent's reasoning effort unless the agent sets one; planning deserves a high one.
+    return f'model = "{model}"\n' + ('model_reasoning_effort = "high"\n' if role == "planner" else "")
 
 
 def write(root: Path, rel: str, text: str, created: list[str], pending: list[str]) -> None:
@@ -248,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
             for agent, role in (("project-planner", "planner"), ("project-plan-executor", "executor")):
                 tmpl = (ASSETS / "agents" / h / f"{agent}.{ext}.tmpl").read_text(encoding="utf-8")
                 write(root, f"{folder}/{agent}.{ext}",
-                      fill(tmpl, {"model_line": model_line(getattr(a, f"{role}_model_{h}"), h)}), created, pending)
+                      fill(tmpl, {"model_line": model_line(getattr(a, f"{role}_model_{h}"), h, role)}), created, pending)
         if "claude" in harness:
             link_skill_for_claude(root, skill_files, created, pending)
     except Exception as e:  # any failure while writing: leave the folder as it was, so a retry passes the gate

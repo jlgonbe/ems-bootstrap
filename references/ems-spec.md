@@ -18,6 +18,7 @@ AGENTS.md                               current state; ≤150 lines (check fails
 CLAUDE.md                               @AGENTS.md and @MEMORY.md (Claude Code entry point)
 MEMORY.md                               lessons M001…, newest first
 DECISIONS.md                            decisions D001…, newest first; born with D001 (adoption)
+plans/                                  created by project-plan-executor: one file per approved plan, with its evidence
 opencode.json                           only with OpenCode: "instructions": ["MEMORY.md"], so OpenCode loads MEMORY.md (see Load protocol)
 .agents/skills/project-memory/          the only writer of MEMORY.md and DECISIONS.md
   SKILL.md · references/entry-format.md · scripts/memory.py
@@ -88,10 +89,10 @@ IDs are assigned by `memory.py` (`max + 1`, never reused) and are immutable: `AG
 
 | Agent | Model | Job | Tools |
 |---|---|---|---|
-| `project-planner` | a deep-thinking model (the author suggests Opus on Claude, Sol on OpenAI; the exact ID comes from the harness: `opencode models`, or `/model` in Codex) | turns a complex request into a short numbered plan with files, risks and how to verify; never edits | read-only |
+| `project-planner` | a deep-thinking model (in Codex also `model_reasoning_effort = "high"` when a model is chosen; the author suggests Opus on Claude, Sol on OpenAI; the exact ID comes from the harness: `opencode models`, or `/model` in Codex) | turns a complex request into a short numbered plan with files, risks and how to verify; never edits | read-only |
 | `project-plan-executor` | a cheaper model (the author suggests Sonnet on Claude, Terra or Luna on OpenAI; the exact ID comes from the harness: `opencode models`, or `/model` in Codex) | carries out an approved plan step by step and reports what it verified; stops and asks if the plan does not fit reality | all |
 
-Planning needs depth; executing a plan the user already reviewed does not. The user picks the models; the setup writes only what the user confirmed and, with no choice, leaves the model out so the agent inherits the session's model. In Codex they are custom agents in `.codex/agents/` that the main agent spawns. In OpenCode both have `mode: all`: the user can switch to them with Tab and the main agent can also hand work to them; in Claude Code they are subagents the main agent delegates to.
+The plan is a reviewable document: created date and status, phases with a checkbox and a check per step, assumptions, risks, out of scope and decisions. Once the user approves it, the executor saves it in `plans/YYYY-MM-DD_<subject>.md`, marks each step `[x]` only next to the literal evidence of its check with date and time, logs deviations, and sets the status to executed. Planning needs depth; executing a plan the user already reviewed does not. The user picks the models; the setup writes only what the user confirmed and, with no choice, leaves the model out so the agent inherits the session's model. In Codex they are custom agents in `.codex/agents/` that the main agent spawns. In OpenCode both have `mode: all`: the user can switch to them with Tab and the main agent can also hand work to them; in Claude Code they are subagents the main agent delegates to.
 
 ## What counts as a new project
 

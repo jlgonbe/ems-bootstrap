@@ -218,6 +218,56 @@ class TestSetup(unittest.TestCase):
         self.assertIn("PermissionError", out)
         self.assertEqual(list(self.root.iterdir()), [])  # AGENTS.md and CLAUDE.md, written before, are gone
 
+    def frontmatter(self, rel):
+        text = (self.root / rel).read_text(encoding="utf-8")
+        self.assertTrue(text.startswith("---\n"), rel)
+        head = text.split("---\n", 2)[1]
+        fields = {}
+        for line in head.splitlines():
+            if line and not line.startswith(" "):
+                key, _, value = line.partition(":")
+                fields[key] = value.strip()
+        return fields, text.split("---\n", 2)[2]
+
+    def test_markdown_agents_follow_each_harness_schema(self):
+        code, out = self.run_setup("--harness", "opencode,claude", "--planner-model-claude", "opus",
+                                   "--planner-model-opencode", "anthropic/claude-opus-5-5")
+        self.assertEqual(code, 0, out)
+        claude_tools = {"Read", "Grep", "Glob", "Bash", "Edit", "Write", "WebFetch", "WebSearch"}
+        for name in ("project-planner", "project-plan-executor"):
+            fields, body = self.frontmatter(f".claude/agents/{name}.md")
+            self.assertEqual(fields["name"], name)
+            self.assertTrue(fields["description"].startswith('"') and fields["description"].endswith('"'))
+            for tool in filter(None, (t.strip() for t in fields.get("tools", "").split(","))):
+                self.assertIn(tool, claude_tools)
+            self.assertTrue(body.strip())
+            fields, body = self.frontmatter(f".opencode/agents/{name}.md")
+            self.assertIn(fields["mode"], {"primary", "subagent", "all"})
+            self.assertTrue(fields["description"].startswith('"') and fields["description"].endswith('"'))
+            self.assertNotIn("permissions", fields)  # V1 format: read by OpenCode 1 and translated by OpenCode 2
+        self.assertEqual(self.frontmatter(".claude/agents/project-planner.md")[0]["tools"], "Read, Grep, Glob")
+        self.assertEqual(self.frontmatter(".claude/agents/project-planner.md")[0]["model"], "opus")
+        planner = (self.root / ".opencode/agents/project-planner.md").read_text(encoding="utf-8")
+        self.assertIn("permission:\n  edit: deny\n  bash: ask\n", planner)
+        for marker in ("Created:", "Status: proposed", "## Phase 1", "- [ ] 1.1", "Evidence:", "## Execution log"):
+            self.assertIn(marker, planner)
+        executor = (self.root / ".opencode/agents/project-plan-executor.md").read_text(encoding="utf-8")
+        self.assertIn("plans/<YYYY-MM-DD>_", executor)
+        self.assertIn("Never mark a step without its evidence", executor)
+
+    def test_codex_planner_gets_high_reasoning_only_with_a_model(self):
+        self.run_setup("--harness", "codex", "--planner-model-codex", "gpt-6.2-sol", "--executor-model-codex", "gpt-6-luna")
+        planner = (self.root / ".codex/agents/project-planner.toml").read_text(encoding="utf-8")
+        executor = (self.root / ".codex/agents/project-plan-executor.toml").read_text(encoding="utf-8")
+        self.assertIn('model_reasoning_effort = "high"', planner)
+        self.assertNotIn("model_reasoning_effort", executor)
+        if tomllib:
+            self.assertEqual(tomllib.loads(planner)["model_reasoning_effort"], "high")
+
+    def test_agents_md_maps_the_plans_folder(self):
+        self.run_setup("--harness", "claude")
+        self.assertIn("| `plans/` |", (self.root / "AGENTS.md").read_text(encoding="utf-8"))
+
     def test_proper_name_inside_quotes_is_accepted(self):
         out = io.StringIO()
         with redirect_stdout(out):
