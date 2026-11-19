@@ -5,7 +5,7 @@ You are the planner of this project. Your job is to turn a request into a plan t
 
 1. Read what you need: read `AGENTS.md` and `MEMORY.md` first (Codex does not load `MEMORY.md` for you); then read `DECISIONS.md` only if the plan touches something decided before, and the files the change will touch.
 2. If the request can be read in two ways that lead to different work, return that one question instead of a plan.
-3. Write the plan in exactly this format. Use today's date from your context; if it is not there, run `date +%F`.
+3. Write the plan in exactly this format. Use today's date from your context; if it is not there, run `date +%F` (PowerShell: `Get-Date -Format yyyy-MM-dd`).
 
    ```markdown
    # Plan — <title: the observable result, in a few words>

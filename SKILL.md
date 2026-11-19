@@ -64,13 +64,13 @@ Any other exit, or a Python traceback: show the user the output and stop.
 
 ## 4. Explain what was created
 
-Walk the user through the result in their language, one line per piece, saying **why** it exists, not just what it is:
+First tell the user to close this session and open a new one in this folder: the harness loads `AGENTS.md`, `MEMORY.md`, the `project-memory` skill and the two agents only when a session starts (Claude Code, for one, does not see a `.claude/agents/` folder created mid-session). Then walk them through the result in their language, one line per piece, saying **why** it exists, not just what it is:
 
 - `AGENTS.md` — the picture of the project **today**, with five working rules; rewritten when something changes. `CLAUDE.md` only imports it (and `MEMORY.md`) because Claude Code reads `CLAUDE.md` instead.
 - `MEMORY.md` — lessons with their date, loaded in every session because they change how the agent works on each task.
 - `DECISIONS.md` — decisions with their date, the alternatives and the reason; read only when needed, so they do not spend tokens on every message. It already holds `D001`, the decision of adopting this system, and every rule in `AGENTS.md` points to it.
 - `project-memory` — the skill that writes both logs: it records the moment something happens (loop 1) and closes every task by checking that `AGENTS.md` is still true (loop 2). It writes without asking and tells them what it wrote.
-- `project-planner` and `project-plan-executor` — plan first, approve, then execute. The plan comes with dates, phases and a checkbox and a check for every step; once approved, the executor saves it in `plans/` and marks each step with its evidence, so it can be reviewed later. In OpenCode the user can switch to them with Tab and the main agent can hand work to them; in Claude Code and Codex the main agent hands work to them. To see that they are there: `opencode agent list`, `/agents` in Claude Code, or ask Codex to list its custom agents. To see that the planner cannot edit, ask it to create a file: OpenCode and Claude Code block it.
+- `project-planner` and `project-plan-executor` — plan first, approve, then execute. The plan comes with dates, phases and a checkbox and a check for every step; once approved, the executor saves it in `plans/` and marks each step with its evidence, so it can be reviewed later. In OpenCode the user can switch to them with Tab and the main agent can hand work to them; in Claude Code and Codex the main agent hands work to them. In the new session, to see that they are there: `opencode agent list` in OpenCode; in Claude Code or Codex, ask «which subagents can you use?». To see that the planner cannot edit, ask it to create a file: OpenCode and Claude Code block it.
 
 Close with three practical lines: correct the agent whenever it gets something wrong (that is how `MEMORY.md` grows); when a choice between alternatives is made, the agent records it; and when `AGENTS.md` passes 150 lines, `memory.py check` fails as a reminder to move what is not needed in every session to a file read only when it applies. If this skill was installed inside the project (`<harness folder>/skills/ems-bootstrap/`), tell the user they can delete that folder now.
 
@@ -82,5 +82,6 @@ Close with three practical lines: correct the agent whenever it gets something w
 - **Never run `setup.py` before the user confirmed the translated answers:** a successful run cannot be repeated (the gate then sees `AGENTS.md`), and D001 keeps the answers for good.
 - **Never run the gate or the setup anywhere but the root of the project the user means:** the gate only inspects `--root .`, so a subfolder of a project whose `AGENTS.md` is above it would pass.
 - **Never delete `.ems-pending/` before every pending file exists at its target:** it is the only copy of those files.
+- **Never test the agents or the memory in the session that ran the setup:** the harness has not loaded them yet, so the checks fail and the user concludes it does not work.
 - **Never leave this skill inside the project without telling the user:** its description would load in every session and its triggers could fire again, only to be stopped by the gate.
 - **Never put the user's answers untranslated in the harness files:** the agent reads them every session in English; the user's own words go only inside `«…»`.

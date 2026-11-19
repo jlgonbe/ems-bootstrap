@@ -6,13 +6,13 @@ memory.py → link the skill for Claude Code → memory.py check. Nothing is wri
 validation fails; if D001 or the check fails, everything this run created is removed.
 
 Usage (from anywhere):
-Exit: 0 done · 1 not a new project · 2 invalid answer · 3 D001 failed · 4 check failed · 5 done, files staged
-for the agent to create · 6 unexpected error while writing. Exits 3, 4 and 6 remove everything the run created.
-
   python3 setup.py --root DIR --project-name "…" --project "…" --how "…" --language Spanish \\
       --harness opencode,claude,codex [--planner-model-opencode P/M] [--executor-model-opencode P/M] \\
       [--planner-model-claude opus] [--executor-model-claude sonnet] \\
       [--planner-model-codex ID] [--executor-model-codex ID] [--triggers "«…», «…»"]
+
+Exit: 0 done · 1 not a new project · 2 invalid answer · 3 D001 failed · 4 check failed · 5 done, files staged
+for the agent to create · 6 unexpected error while writing. Exits 3, 4 and 6 remove everything the run created.
 
 All texts are English except --triggers (phrases in the user's language, each inside «…»).
 Standard library only.
@@ -103,6 +103,8 @@ def fill(text: str, values: dict[str, str]) -> str:
 def model_line(model: str | None, harness: str, role: str) -> str:
     if not model:
         return ""
+    if harness == "claude":
+        return f"model: {model}\n" + ("effort: high\n" if role == "planner" else "")
     if harness != "codex":
         return f"model: {model}\n"
     # Codex keeps the parent's reasoning effort unless the agent sets one; planning deserves a high one.

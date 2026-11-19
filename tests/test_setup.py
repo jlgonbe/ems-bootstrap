@@ -248,7 +248,9 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(self.frontmatter(".claude/agents/project-planner.md")[0]["tools"], "Read, Grep, Glob")
         self.assertEqual(self.frontmatter(".claude/agents/project-planner.md")[0]["model"], "opus")
         planner = (self.root / ".opencode/agents/project-planner.md").read_text(encoding="utf-8")
-        self.assertIn("permission:\n  edit: deny\n  bash: ask\n", planner)
+        self.assertIn("permission:\n  edit: deny\n  bash: ask\n  task: deny\n", planner)
+        self.assertEqual(self.frontmatter(".claude/agents/project-planner.md")[0]["effort"], "high")
+        self.assertNotIn("effort", self.frontmatter(".claude/agents/project-plan-executor.md")[0])
         for marker in ("Created:", "Status: proposed", "## Phase 1", "- [ ] 1.1", "Evidence:", "## Execution log"):
             self.assertIn(marker, planner)
         executor = (self.root / ".opencode/agents/project-plan-executor.md").read_text(encoding="utf-8")
